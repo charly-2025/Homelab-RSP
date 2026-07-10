@@ -25,8 +25,6 @@ services:
       context: ./site/backend
     container_name: remote-wakeup-backend
     restart: unless-stopped
-    ports:
-      - "3000:3000"
     env_file:
       - .env
     extra_hosts:
@@ -39,11 +37,22 @@ services:
       context: ./site/frontend
     container_name: remote-wakeup-frontend
     restart: unless-stopped
-    ports:
-      - "3001:80"
     networks:
       - homelab_network  
 
+
+  nginx:
+    build:
+      context: ./nginx
+    container_name: homelab-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - frontend
+      - backend
+    networks:
+      - homelab_network
 
 networks:
   homelab_network:
