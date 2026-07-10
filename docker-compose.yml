@@ -1,0 +1,28 @@
+services:
+  portainer:
+    image: portainer/portainer-ce:latest
+    container_name: portainer
+    restart: unless-stopped
+    ports:
+      - "9443:9443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./data/portainer:/data
+    networks:
+      - homelab_network
+
+  backend:
+    build:
+      context: ./site/backend
+    container_name: remote-wakeup-backend
+    restart: unless-stopped
+    env_file:
+      - ./site/.env
+    network_mode: host
+    cap_add:
+      - NET_RAW
+
+
+networks:
+  homelab_network:
+    external: true
