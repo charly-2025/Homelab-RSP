@@ -1,17 +1,18 @@
-from flask import Flask, jsonify,redirect
+from flask import Flask
 from flask_cors import CORS
-import dotenv
-import os
-import requests
+
+from routes.wake import wake
+from routes.pc import pc
 
 app = Flask(__name__)
 CORS(app)
 
-@app.route("/api/wake", methods=["POST"])
-def wake():
-   requests.post("http://host.docker.internal:4000/wake")
-   return jsonify({"message":"magic packet sent", "status_code": 200})
+app.register_blueprint(wake)
+app.register_blueprint(pc)
 
 if __name__ == "__main__":
-    app.run(port=3000, debug=True, host="0.0.0.0")
-
+    app.run(
+        host="0.0.0.0",
+        port=3000,
+        debug=True
+    )

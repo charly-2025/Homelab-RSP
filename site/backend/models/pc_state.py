@@ -1,0 +1,5 @@
+class PcState:
+    OFFLINE = "OFFLINE"
+    ONLINE = "ONLINE"
+    STARTING = "STARTING"
+    READY = "READY"
