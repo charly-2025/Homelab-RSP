@@ -34,6 +34,11 @@
     gap: 10px;
 }
 
+.home-content button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
 .home-content .home-btn-pc-powerOn { background: var(--dark-blue); color: var(--white); border: none; }
 .home-content .home-btn-console { background: transparent; color: var(--dark-blue); border: 1px solid rgba(11,37,69,0.12); }
 
