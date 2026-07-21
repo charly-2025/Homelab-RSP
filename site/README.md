@@ -1,217 +1,133 @@
 # PC Control Interface
 
-A modern web application that allows you to remotely control and monitor a Windows computer.
+A full-stack web application for remotely controlling and monitoring a Windows computer.
 
-The interface is built with React and communicates with a Flask backend through a REST API.
+The project is composed of two independent applications:
+
+- **Frontend**: React application responsible for the user interface.
+- **Backend**: Flask API responsible for Wake-on-LAN, monitoring and state management.
+
+The two services are containerized using Docker and communicate through REST APIs.
 
 ---
 
 # Features
 
 - Remote Wake-on-LAN
-- Live PC monitoring
-- Automatic boot detection
+- Live system monitoring
+- Boot detection
 - Shutdown detection
-- Live CPU usage
-- Live RAM usage
-- System uptime
-- Responsive interface
-- Console page
+- Remote console
+- REST API
+- Docker deployment
 
 ---
 
-# Technologies
+# Architecture
 
-## Frontend
+```
+                Browser
+                   │
+                   ▼
+            React Frontend
+                   │
+           HTTP REST Requests
+                   │
+                   ▼
+             Flask Backend
+          ┌────────┴────────┐
+          │                 │
+          ▼                 ▼
+     Wake-on-LAN      Monitoring
+          │                 │
+          └────────┬────────┘
+                   ▼
+             Windows Computer
+```
 
-- React
-- CSS
-- Fetch API
+The frontend never communicates directly with the monitored computer.
 
-## Backend
-
-- Flask
-- Python
+All operations go through the backend.
 
 ---
 
 # Project Structure
 
 ```
-src/
+.
+├── backend/
+│   ├── app.py
+│   ├── routes/
+│   ├── services/
+│   ├── models/
+│   ├── utils/
+│   └── Dockerfile
 │
-├── components/
-├── images/
-├── pages/
-│   ├── Home.jsx
-│   ├── Console.jsx
-│   └── ...
+├── frontend/
+│   ├── src/
+│   ├── public/
+│   ├── Dockerfile
+│   └── vite.config.js
 │
-├── App.jsx
-└── main.jsx
+└── README.md
 ```
 
 ---
 
-# State Machine
+# Components
 
-The frontend only displays states returned by the backend.
+## Frontend
 
-Available states:
+Responsible for:
 
-| State | Description |
-|--------|-------------|
-| OFFLINE | The computer is unreachable. |
-| STARTING | A boot sequence is in progress. |
-| ONLINE | The monitoring agent is reachable. |
-| READY | The computer is fully operational. |
-| SHUTTING_DOWN | A shutdown has been detected. |
-| LOADING | Waiting for the first backend response. |
-| MONITORING_OFF | Monitoring is disabled. |
+- User interface
+- Displaying monitoring information
+- Sending API requests
+- Handling UI transitions
+
+See `frontend/README.md`.
 
 ---
 
-# Frontend Philosophy
+## Backend
 
-The frontend is intentionally **stateless** regarding the PC.
+Responsible for:
 
-It does **not** try to determine whether the PC is booting or shutting down.
+- Wake-on-LAN
+- Monitoring
+- Boot state management
+- Shutdown detection
+- REST API
 
-Its role is limited to:
-
-- displaying backend information
-- sending user actions
-- managing animations and UI transitions
-
-This keeps the frontend simple and prevents duplicated logic.
+See `backend/README.md`.
 
 ---
 
-# Monitoring
+# Design Philosophy
 
-Monitoring is disabled by default.
+The backend is the single source of truth.
 
-Once enabled, the frontend periodically requests:
+The frontend only displays backend states and never attempts to determine the computer status itself.
 
-```
-GET /api/pc/status
-```
-
-The polling interval is currently **2 seconds**.
-
-When monitoring is stopped:
-
-- polling stops
-- timers are cleared
-- all temporary states are reset
+This architecture keeps the application predictable and easy to maintain.
 
 ---
 
-# Wake-on-LAN
+# Technologies
 
-Clicking **Power On** sends:
+Frontend
 
-```
-POST /api/wake
-```
+- React
+- Vite
 
-Immediately after sending the request:
+Backend
 
-- the button is disabled
-- the interface switches to **STARTING**
+- Flask
+- Python
 
-The backend then becomes responsible for the rest of the boot sequence.
+Infrastructure
 
----
-
-# Shutdown Detection
-
-When the backend transitions from:
-
-```
-READY
-```
-
-or
-
-```
-ONLINE
-```
-
-to
-
-```
-OFFLINE
-```
-
-the frontend temporarily displays:
-
-```
-SHUTTING DOWN
-```
-
-instead of switching directly to OFFLINE.
-
-This prevents flickering during:
-
-- reboot
-- temporary network interruptions
-- service restarts
-
-If the PC comes back online before the timer expires, the shutdown state is automatically cancelled.
-
----
-
-# UI Principles
-
-The interface follows a few simple rules:
-
-- one source of truth (the backend)
-- minimal frontend logic
-- immediate visual feedback
-- no duplicated state machine
-- responsive updates
-
----
-
-# Future Improvements
-
-Planned features:
-
-- Boot history
-- Boot statistics
-- Ethernet link detection
-- System temperatures
-- GPU monitoring
-- Disk monitoring
-- Event timeline
-- Modern dashboard
-- Theme customization
-
----
-
-# Development
-
-Install dependencies:
-
-```bash
-npm install
-```
-
-Start the development server:
-
-```bash
-npm run dev
-```
-
-Build for production:
-
-```bash
-npm run build
-```
-
----
-
-# License
-
-This project was developed as a personal learning project to explore remote system management, React development and backend-driven application design.
+- Docker
+- Nginx
+- Wake-on-LAN
+- Tailscale

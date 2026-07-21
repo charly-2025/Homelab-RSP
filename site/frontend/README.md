@@ -1,111 +1,148 @@
-# Frontend - Remote Wakeup
+# Frontend
 
-## Overview
+React application providing the graphical interface for the PC Control Interface.
 
-This frontend is a React + Vite application.
+---
 
-Production workflow:
+# Responsibilities
 
-``` text
+The frontend is responsible for:
+
+- Displaying the current PC status
+- Sending user actions
+- Showing monitoring information
+- Managing interface transitions
+- Rendering pages
+
+Business logic remains in the backend.
+
+---
+
+# Technologies
+
+- React
+- Vite
+- CSS
+- Fetch API
+
+---
+
+# Folder Structure
+
+```
 src/
-   |
-   | npm run build
-   v
-dist/
-   |
-   v
-Docker image
-   |
-   v
-Frontend container
-   |
-   v
-Global Nginx reverse proxy
+
+├── components/
+├── images/
+├── pages/
+├── App.jsx
+└── main.jsx
 ```
 
-The production container only contains the compiled static files
-(`dist`) and a lightweight web server.
+---
 
-------------------------------------------------------------------------
+# Pages
 
-## Development
+## Home
 
-Install dependencies:
+Main dashboard.
 
-``` bash
+Displays:
+
+- Current status
+- CPU usage
+- RAM usage
+- Uptime
+- Wake button
+- Monitoring controls
+
+---
+
+## Console
+
+Provides access to the remote console.
+
+---
+
+# Monitoring
+
+Monitoring is started manually.
+
+The frontend periodically requests:
+
+```
+GET /api/pc/status
+```
+
+every two seconds.
+
+When monitoring stops:
+
+- polling stops
+- timers are cleared
+- temporary states are reset
+
+---
+
+# User Interface States
+
+Available states:
+
+- MONITORING_OFF
+- LOADING
+- OFFLINE
+- STARTING
+- ONLINE
+- READY
+- SHUTTING_DOWN
+
+The frontend does not compute these states.
+
+It simply renders the values returned by the backend.
+
+---
+
+# Wake-on-LAN
+
+Clicking the power button sends:
+
+```
+POST /api/wake
+```
+
+The interface immediately:
+
+- disables the button
+- displays STARTING
+
+The backend is then responsible for the remaining state transitions.
+
+---
+
+# Development
+
+Install dependencies
+
+```bash
 npm install
 ```
 
-Start the development server:
+Run development server
 
-``` bash
+```bash
 npm run dev
 ```
 
-------------------------------------------------------------------------
+Build production version
 
-## Build for Production
-
-Compile the frontend:
-
-``` bash
+```bash
 npm run build
 ```
 
-The generated files are written to:
+---
 
-``` text
-dist/
-```
+# Philosophy
 
-------------------------------------------------------------------------
+The frontend intentionally contains very little business logic.
 
-## Rebuild the Docker Image
-
-From the `~/homelab` directory:
-
-``` bash
-docker compose build frontend
-docker compose up -d frontend
-```
-
-------------------------------------------------------------------------
-
-## Useful Commands
-
-View running containers:
-
-``` bash
-docker ps
-```
-
-View logs:
-
-``` bash
-docker logs remote-wakeup-frontend
-```
-
-Restart the container:
-
-``` bash
-docker restart remote-wakeup-frontend
-```
-
-------------------------------------------------------------------------
-
-## Best Practices
-
--   Only edit files inside `src/`.
--   Never edit the `dist/` directory manually.
--   Run `npm run build` after every frontend change.
--   Rebuild the Docker image after generating a new `dist/`.
-
-------------------------------------------------------------------------
-
-## Notes
-
-The frontend container is intentionally lightweight.
-
-Node.js is only required during development and build time. In
-production, only the compiled static files are served, minimizing CPU,
-RAM usage, and image size.
+Its purpose is to provide a responsive interface while leaving all decision making to the backend.
