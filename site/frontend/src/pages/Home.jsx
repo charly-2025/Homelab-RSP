@@ -1,114 +1,249 @@
-import { useEffect, useState } from 'react'
-import './Home.css'
+import { useEffect, useRef, useState } from "react";
+import "./Home.css";
 
 /* Import Icon */
-import powerOnIcon from "../images/power-off.svg"
-import consoleIcon from "../images/console.svg"
+import powerOnIcon from "../images/power-off.svg";
+import consoleIcon from "../images/console.svg";
 
 function Home({ setSelectedPage }) {
+  const STATE_LABELS = {
+    MONITORING_OFF: "Monitoring Off",
+    SHUTTING_DOWN: "Shutting Down",
+    STARTING: "Starting",
+    READY: "Ready",
+    ONLINE: "Online",
+    OFFLINE: "Offline",
+    LOADING: "Loading",
+  };
+  const [monitoring, setMonitoring] = useState(false);
 
-    const [pc, setPc] = useState(null)
+  const [pc, setPc] = useState(null);
 
-    const getPcStatus = async () => {
-        try {
-            const response = await fetch('/api/pc/status')
-            const data = await response.json()
+  const [displayState, setDisplayState] = useState("MONITORING_OFF");
 
-            setPc(data)
+  const [powerLocked, setPowerLocked] = useState(true);
+
+  const shutdownTimer = useRef(null);
+  const polling = useRef(null);
+  const monitoringRef = useRef(false);
+  const previousBackendState = useRef(null);
+  const shuttingDownRef = useRef(false);
+  const wakePendingRef = useRef(false);
+
+  async function getPcStatus() {
+    if (!monitoringRef.current) return;
+
+    try {
+      const response = await fetch("/api/pc/status");
+      if (!response.ok) {
+        throw new Error("Backend error");
+      }
+      if (!monitoringRef.current) return;
+
+      const data = await response.json();
+      const previousState = previousBackendState.current;
+      previousBackendState.current = data.state;
+
+      if (!monitoringRef.current) return;
+
+      setPc(data);
+      if (wakePendingRef.current) {
+        if (data.state === "OFFLINE") {
+          return;
         }
-        catch (error) {
-            console.error(error)
+      
+        if (data.state === "STARTING") {
+          wakePendingRef.current = false;
         }
+      }
+
+      /*
+            ----------------------------------------
+            SHUTTING DOWN
+            ----------------------------------------
+            */
+
+      if (
+        (previousState === "READY" || previousState === "ONLINE") &&
+        data.state === "OFFLINE"
+      ) {
+        shuttingDownRef.current = true;
+        setDisplayState("SHUTTING_DOWN");
+        setPowerLocked(true);
+        clearTimeout(shutdownTimer.current);
+        shutdownTimer.current = setTimeout(() => {
+          shuttingDownRef.current = false;
+          setDisplayState("OFFLINE");
+          setPowerLocked(false);
+        }, 20000);
+        return;
+      }
+
+      /*
+            ----------------------------------------
+            Cancel shutdown
+            ----------------------------------------
+            */
+
+      if (
+        shuttingDownRef.current &&
+        (data.state === "READY" || data.state === "ONLINE")
+      ) {
+        clearTimeout(shutdownTimer.current);
+        shuttingDownRef.current = false;
+        setDisplayState(data.state);
+        setPowerLocked(true);
+      }
+      /*
+            ----------------------------------------
+            Backend state
+            ----------------------------------------
+            */
+
+      if (!shuttingDownRef.current) {
+        setDisplayState(data.state);
+      }
+
+      /*
+            ----------------------------------------
+            Unlock Power Button
+            ----------------------------------------
+            */
+
+      if (wakePendingRef.current) {
+        setPowerLocked(true);
+      } else if (
+        data.state === "OFFLINE" &&
+        !shuttingDownRef.current
+      ) {
+        setPowerLocked(false);
+      } else {
+        setPowerLocked(true);
+      }
+    } catch (err) {
+      console.error(err);
     }
+  }
+  const wakePC = async () => {
+    if (powerLocked) return;
 
-    const wakePC = async () => {
-
-        if (pc?.state !== "OFFLINE")
-            return
-
-        try {
-            const response = await fetch('/api/wake', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            })
-
-            const data = await response.json()
-
-            console.log(data.message)
-
-            getPcStatus()
-        }
-        catch (error) {
-            console.error('Error waking PC:', error)
-        }
+    wakePendingRef.current = true;
+    setPowerLocked(true);
+    setDisplayState("STARTING");
+  
+    try {
+      const response = await fetch("/api/wake", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+  
+      const data = await response.json();
+      console.log(data.message);
+  
+    } catch (err) {
+      wakePendingRef.current = false;
+      console.error(err);
+      setPowerLocked(false);
+      setDisplayState("OFFLINE");
     }
+  };
 
-    useEffect(() => {
+  const startMonitoring = () => {
+    if (monitoring) return;
+    setPowerLocked(true);
+    setMonitoring(true);
+    setDisplayState("LOADING");
+  };
 
-        getPcStatus()
+  const stopMonitoring = () => {
+    clearInterval(polling.current);
+    clearTimeout(shutdownTimer.current);
 
-        const interval = setInterval(getPcStatus, 2000)
+    previousBackendState.current = null;
+    shuttingDownRef.current = false;
 
-        return () => clearInterval(interval)
+    setMonitoring(false);
+    setPc(null);
+    setDisplayState("MONITORING_OFF");
+    setPowerLocked(true);
+  };
 
-    }, [])
+  useEffect(() => {
+    if (!monitoring) return;
+    getPcStatus();
+    polling.current = setInterval(getPcStatus, 2000);
+    return () => {
+      clearInterval(polling.current);
+      clearTimeout(shutdownTimer.current);
+    };
+  }, [monitoring]);
 
-    return (
-        <div className="home-container">
+  useEffect(() => {
+    return () => {
+      clearInterval(polling.current);
 
-            <div className="home-content">
+      clearTimeout(shutdownTimer.current);
+    };
+  }, []);
 
-                <h1>Welcome to the Control Interface</h1>
+  useEffect(() => {
+    monitoringRef.current = monitoring;
+  }, [monitoring]);
 
-                <p>State : <strong>{pc?.state ?? "Loading..."}</strong></p>
+  return (
+    <div className="home-container">
+      <div className="home-content">
+        <h1>Welcome to the Control Interface</h1>
 
-                {
-                    pc?.state === "STARTING" &&
-                    <p>Starting... {pc?.session?.elapsed ?? 0}s</p>
-                }
+        <p>
+          Monitoring : <strong>{monitoring ? "ON" : "OFF"}</strong>
+        </p>
 
-                {
-                    pc?.system &&
-                    <>
-                        <p>CPU : {pc.system.cpu_percent}%</p>
+        <p>
+          State : <strong>{STATE_LABELS[displayState] || displayState}</strong>
+        </p>
 
-                        <p>RAM : {pc.system.ram_percent}%</p>
+        {monitoring &&
+          displayState === "STARTING" &&
+          pc?.session?.elapsed != null && (
+            <p>Starting Time : {pc.session.elapsed}s</p>
+          )}
 
-                        <p>
-                            Uptime :
-                            {" "}
-                            {pc.uptime.days}d
-                            {" "}
-                            {pc.uptime.hours}h
-                            {" "}
-                            {pc.uptime.minutes}m
-                        </p>
-                    </>
-                }
+        {monitoring && pc?.system && (
+          <>
+            <p>CPU : {pc.system.cpu_percent}%</p>
 
-                <button
-                    className="home-btn-pc-powerOn"
-                    onClick={wakePC}
-                    disabled={pc?.state !== "OFFLINE"}
-                >
-                    <img src={powerOnIcon} alt="Power On" />
-                    Power On
-                </button>
+            <p>RAM : {pc.system.ram_percent}%</p>
 
-                <button
-                    className="home-btn-console"
-                    onClick={() => setSelectedPage('console')}
-                >
-                    <img src={consoleIcon} alt="Console" />
-                    Console
-                </button>
+            <p>
+              Uptime : {pc.uptime.days}d {pc.uptime.hours}h {pc.uptime.minutes}m
+            </p>
+          </>
+        )}
 
-            </div>
+        <button onClick={monitoring ? stopMonitoring : startMonitoring}>
+          {monitoring ? "Stop Monitoring" : "Start Monitoring"}
+        </button>
 
-        </div>
-    )
+        <button
+          className="home-btn-pc-powerOn"
+          onClick={wakePC}
+          disabled={!monitoring || powerLocked}
+        >
+          <img src={powerOnIcon} alt="Power On" />
+          Power On
+        </button>
+
+        <button
+          className="home-btn-console"
+          onClick={() => setSelectedPage("console")}
+        >
+          <img src={consoleIcon} alt="Console" />
+          Console
+        </button>
+      </div>
+    </div>
+  );
 }
 
-export default Home
+export default Home;

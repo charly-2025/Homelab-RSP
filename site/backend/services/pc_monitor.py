@@ -7,9 +7,10 @@ import requests
 from models.pc_state import PcState
 from services.boot_session import (
     load_session,
+    update_elapsed,
     mark_online,
     mark_ready,
-    mark_failed,
+    mark_failed
 )
 
 TZ = ZoneInfo("Europe/Paris")
@@ -17,6 +18,7 @@ PC_AGENT = os.getenv("PC_AGENT_URL")
 
 
 def format_uptime(seconds):
+
     days = seconds // 86400
     hours = (seconds % 86400) // 3600
     minutes = (seconds % 3600) // 60
@@ -25,17 +27,16 @@ def format_uptime(seconds):
         "seconds": seconds,
         "days": days,
         "hours": hours,
-        "minutes": minutes,
+        "minutes": minutes
     }
 
 
 def get_pc_status():
+
     session = load_session()
 
-    if not session:
-        session = {}
-
     try:
+
         response = requests.get(
             f"{PC_AGENT}/status",
             timeout=2
@@ -44,29 +45,28 @@ def get_pc_status():
         response.raise_for_status()
 
         data = response.json()
+
         rustdesk = data["rustdesk"]
 
-        # STARTING -> ONLINE
-        if (
-            session
-            and session.get("status") == "STARTING"
-            and session.get("pc_online_at") is None
-        ):
-            mark_online()
-            session = load_session()
+        if session:
 
-        # ONLINE -> READY
-        if (
-            session
-            and rustdesk["ready"]
-            and session.get("rustdesk_ready_at") is None
-        ):
-            session = mark_ready()
+            if (
+                session["status"] == "STARTING"
+                and session["pc_online_at"] is None
+            ):
+                session = mark_online()
 
-        if rustdesk["ready"]:
-            state = PcState.READY
-        else:
-            state = PcState.ONLINE
+            if (
+                rustdesk["ready"]
+                and session["rustdesk_ready_at"] is None
+            ):
+                session = mark_ready()
+
+        state = (
+            PcState.READY
+            if rustdesk["ready"]
+            else PcState.ONLINE
+        )
 
         return {
             "state": state,
@@ -76,39 +76,44 @@ def get_pc_status():
             ),
             "system": data["system"],
             "rustdesk": rustdesk,
-            "session": session,
+            "session": session
         }
 
     except requests.RequestException:
 
         session = load_session()
 
-        if session and session.get("status") == "STARTING":
+        if session:
 
-            wake = datetime.fromisoformat(
-                session["wake_sent_at"]
-            )
+            session = update_elapsed()
 
-            elapsed = int(
-                (datetime.now(TZ) - wake).total_seconds()
-            )
+            if session["elapsed"] >= 240:
 
-            session["elapsed"] = elapsed
+                mark_failed()
 
-            if elapsed >= 600:
-                session = mark_failed()
-                state = PcState.FAILED
-            else:
-                state = PcState.STARTING
+                return {
+                    "state": PcState.OFFLINE,
+                    "hostname": None,
+                    "uptime": None,
+                    "system": None,
+                    "rustdesk": None,
+                    "session": {}
+                }
 
-        else:
-            state = PcState.OFFLINE
+            return {
+                "state": PcState.STARTING,
+                "hostname": None,
+                "uptime": None,
+                "system": None,
+                "rustdesk": None,
+                "session": session
+            }
 
         return {
-            "state": state,
+            "state": PcState.OFFLINE,
             "hostname": None,
             "uptime": None,
             "system": None,
             "rustdesk": None,
-            "session": session,
+            "session": {}
         }

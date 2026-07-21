@@ -1,8 +1,8 @@
 import requests
 
-from services.pc_monitor import get_pc_status
-from services.boot_session import start_boot_session
 from models.pc_state import PcState
+from services.boot_session import start_boot_session
+from services.pc_monitor import get_pc_status
 
 
 def wake_pc():
@@ -12,7 +12,7 @@ def wake_pc():
     if status["state"] != PcState.OFFLINE:
         return {
             "success": False,
-            "message": "PC is not offline."
+            "message": "PC is already running or starting."
         }
 
     start_boot_session()
