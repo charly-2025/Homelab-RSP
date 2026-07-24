@@ -21,6 +21,32 @@ services:
     networks:
       - homelab_network
 
+  pihole:
+    image: pihole/pihole:latest
+    container_name: pihole
+    hostname: pihole
+    restart: unless-stopped
+
+    environment:
+      TZ: Europe/Paris
+      FTLCONF_webserver_api_password: ${PIHOLE_PASSWORD}
+      FTLCONF_webserver_paths_prefix: /pihole
+      DNSMASQ_LISTENING: all
+
+    volumes:
+      - ./data/pihole/etc-pihole:/etc/pihole
+      - ./data/pihole/etc-dnsmasq.d:/etc/dnsmasq.d
+
+    ports:
+      - "53:53/tcp"
+      - "53:53/udp"
+
+    cap_add:
+      - NET_ADMIN
+
+    networks:
+      - homelab_network
+  
   netdata:
     build:
       context: ./netdata
@@ -102,8 +128,24 @@ services:
       - backend
     volumes:
       - ./nginx/certs:/etc/nginx/certs:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
     networks:
       - homelab_network
+
+  authelia:
+    image: authelia/authelia:latest
+    container_name: authelia
+    restart: unless-stopped
+
+    volumes:
+      - ./data/authelia/config:/config
+
+    environment:
+      TZ: Europe/Paris
+
+    networks:
+      - homelab_network
+
 
 networks:
   homelab_network:
