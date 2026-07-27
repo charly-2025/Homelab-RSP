@@ -52,9 +52,7 @@ function Home({ setSelectedPage }) {
           return;
         }
       
-        if (data.state === "STARTING") {
-          wakePendingRef.current = false;
-        }
+        wakePendingRef.current = false;
       }
 
       /*
@@ -122,11 +120,21 @@ function Home({ setSelectedPage }) {
       }
     } catch (err) {
       console.error(err);
+    
+      wakePendingRef.current = false;
+    
+      if (!monitoringRef.current) {
+        return;
+      }
+    
+      setPc(null);
+      setDisplayState("OFFLINE");
+      setPowerLocked(false);
     }
   }
   const wakePC = async () => {
     if (powerLocked) return;
-
+  
     wakePendingRef.current = true;
     setPowerLocked(true);
     setDisplayState("STARTING");
@@ -134,26 +142,32 @@ function Home({ setSelectedPage }) {
     try {
       const response = await fetch("/api/wake", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
       });
-  
-      const data = await response.json();
+    
+      let data = {};
+    
+      try {
+        data = await response.json();
+      } catch (_) {}
+    
+      if (!response.ok) {
+        throw new Error(data.message || `HTTP ${response.status}`);
+      }
+    
       console.log(data.message);
-  
+    
     } catch (err) {
-      wakePendingRef.current = false;
       console.error(err);
+    
+      wakePendingRef.current = false;
       setPowerLocked(false);
       setDisplayState("OFFLINE");
     }
   };
 
-  const startMonitoring = () => {
-    if (monitoring) return;
-    setPowerLocked(true);
-    setMonitoring(true);
-    setDisplayState("LOADING");
-  };
 
   const stopMonitoring = () => {
     clearInterval(polling.current);

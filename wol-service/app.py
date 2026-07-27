@@ -1,52 +1,47 @@
-from flask import Flask, jsonify, request
-import subprocess
 import os
+import subprocess
 
-app = Flask(__name__)
+from dotenv import load_dotenv
+from flask import jsonify
+
+load_dotenv()
 
 PC_MAC = os.getenv("PC_MAC")
-API_TOKEN = os.getenv("WOL_API_TOKEN")
+WOL_METHOD = os.getenv("WOL_METHOD")
 
-
-@app.route("/wake", methods=["POST"])
+@app.route("/api/wake", methods=["POST"])
 def wake():
-    
-    if request.headers.get("X-API-Key") != API_TOKEN:
-        return jsonify({
-            "success": False,
-            "message": "Unauthorized"
-        }), 401
-
-    if not PC_MAC:
-        return jsonify({
-            "success": False,
-            "message": "PC_MAC environment variable is not set."
-        }), 500
-
     try:
-        result = subprocess.run(
-            [
-                "etherwake",
-                "-i",
-                "eth0",
-                PC_MAC
-            ],
-            capture_output=True,
-            text=True,
-            check=True
-        )
+        if not WOL_METHOD:
+            return jsonify({
+                "success": False,
+                "message": "WOL_METHOD is not configured."
+            }), 500
+
+        if WOL_METHOD == "etherwake":
+            subprocess.run(
+                ["etherwake", "-i", "eth0", PC_MAC],
+                check=True
+            )
+
+        elif WOL_METHOD == "wakeonlan":
+            send_magic_packet(PC_MAC)
+
+        else:
+            return jsonify({
+                "success": False,
+                "message": f"Invalid WOL_METHOD: '{WOL_METHOD}'. Expected 'etherwake' or 'wakeonlan'."
+            }), 500
 
         return jsonify({
             "success": True,
-            "message": "Magic Packet sent.",
-            "output": result.stdout.strip()
-        }), 200
+            "method": WOL_METHOD
+        })
 
-    except subprocess.CalledProcessError as e:
+    except Exception as e:
         return jsonify({
             "success": False,
-            "message": "Failed to send Magic Packet.",
-            "error": e.stderr.strip()
+            "message": str(e)
         }), 500
 
 
