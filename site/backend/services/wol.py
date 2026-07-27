@@ -29,10 +29,10 @@ def wake_pc():
 
         response.raise_for_status()
 
-    except requests.RequestException:
+    except requests.RequestException as e:
         return {
             "success": False,
-            "message": "Error: Magic Packet not sent."
+            "message": str(e)
         }
 
     return {

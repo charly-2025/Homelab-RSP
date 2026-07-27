@@ -41,6 +41,7 @@ function Home({ setSelectedPage }) {
       if (!monitoringRef.current) return;
 
       const data = await response.json();
+      console.log("status =", data.state);
       const previousState = previousBackendState.current;
       previousBackendState.current = data.state;
 
@@ -51,7 +52,7 @@ function Home({ setSelectedPage }) {
         if (data.state === "OFFLINE") {
           return;
         }
-      
+
         wakePendingRef.current = false;
       }
 
@@ -110,23 +111,20 @@ function Home({ setSelectedPage }) {
 
       if (wakePendingRef.current) {
         setPowerLocked(true);
-      } else if (
-        data.state === "OFFLINE" &&
-        !shuttingDownRef.current
-      ) {
+      } else if (data.state === "OFFLINE" && !shuttingDownRef.current) {
         setPowerLocked(false);
       } else {
         setPowerLocked(true);
       }
     } catch (err) {
       console.error(err);
-    
+
       wakePendingRef.current = false;
-    
+
       if (!monitoringRef.current) {
         return;
       }
-    
+
       setPc(null);
       setDisplayState("OFFLINE");
       setPowerLocked(false);
@@ -134,11 +132,11 @@ function Home({ setSelectedPage }) {
   }
   const wakePC = async () => {
     if (powerLocked) return;
-  
+    
     wakePendingRef.current = true;
     setPowerLocked(true);
     setDisplayState("STARTING");
-  
+
     try {
       const response = await fetch("/api/wake", {
         method: "POST",
@@ -146,28 +144,34 @@ function Home({ setSelectedPage }) {
           "Content-Type": "application/json",
         },
       });
-    
+
       let data = {};
-    
+
       try {
         data = await response.json();
       } catch (_) {}
-    
+
       if (!response.ok) {
         throw new Error(data.message || `HTTP ${response.status}`);
       }
-    
+
       console.log(data.message);
-    
     } catch (err) {
       console.error(err);
-    
+
+      console.log("wake catch", err.message);
       wakePendingRef.current = false;
       setPowerLocked(false);
+
+      
+      if (err.message === "PC is already running or starting.") {
+        getPcStatus();
+        return;
+      }
+
       setDisplayState("OFFLINE");
     }
   };
-
 
   const stopMonitoring = () => {
     clearInterval(polling.current);
