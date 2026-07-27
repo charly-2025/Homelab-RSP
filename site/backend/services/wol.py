@@ -11,31 +11,29 @@ def wake_pc():
     status = get_pc_status()
 
     if status["state"] != PcState.OFFLINE:
-        return {
-            "success": False,
-            "message": "PC is already running or starting."
-        }
+        return {"success": False, "message": "PC is already running or starting."}
 
     start_boot_session()
 
     try:
         response = requests.post(
             "http://host.docker.internal:4000/wake",
-            headers={
-                "X-API-Key": os.getenv("WOL_API_TOKEN")
-            },
-            timeout=5
+            headers={"X-API-Key": os.getenv("WOL_API_TOKEN")},
+            timeout=5,
         )
 
         response.raise_for_status()
 
-    except requests.RequestException as e:
-        return {
-            "success": False,
-            "message": str(e)
-        }
+    except requests.HTTPError as e:
+        try:
+            error = e.response.json()
+            message = error.get("message", str(e))
+        except Exception:
+            message = str(e)
 
-    return {
-        "success": True,
-        "message": "Magic Packet sent."
-    }
+        return {"success": False, "message": message}
+
+    except requests.RequestException as e:
+        return {"success": False, "message": str(e)}
+
+    return {"success": True, "message": "Magic Packet sent."}
