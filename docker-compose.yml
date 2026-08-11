@@ -116,7 +116,7 @@ services:
 
 
 
- nginx:
+  nginx:
      build:
        context: ./nginx
      container_name: homelab-nginx
@@ -131,7 +131,7 @@ services:
      networks:
        - homelab_network
 
-   authelia:
+  authelia:
      image: authelia/authelia:latest
      container_name: authelia
      restart: unless-stopped
