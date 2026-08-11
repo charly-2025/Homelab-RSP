@@ -104,27 +104,27 @@ services:
     env_file:
       - .env
 
-  # backend:
-  #   build:
-  #     context: ./site/backend
-  #   container_name: remote-wakeup-backend
-  #   restart: unless-stopped
-  #   env_file:
-  #     - .env
-  #   extra_hosts:
-  #     - "host.docker.internal:host-gateway"
-  #   volumes:
-  #     - ./data/site/backend:/data
-  #   networks:
-  #     - homelab_network
+  backend:
+    build:
+      context: ./site/backend
+    container_name: remote-wakeup-backend
+    restart: unless-stopped
+    env_file:
+      - .env
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ./data/site/backend:/data
+    networks:
+      - homelab_network
 
-  # frontend:
-  #   build:
-  #     context: ./site/frontend
-  #   container_name: remote-wakeup-frontend
-  #   restart: unless-stopped
-  #   networks:
-  #     - homelab_network  
+  frontend:
+    build:
+      context: ./site/frontend
+    container_name: remote-wakeup-frontend
+    restart: unless-stopped
+    networks:
+      - homelab_network  
 
 
 
