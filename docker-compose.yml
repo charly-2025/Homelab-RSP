@@ -59,50 +59,50 @@ services:
     networks:
       - homelab_network
   
-  # netdata:
-  #   build:
-  #     context: ./netdata
-  #   image: homelab-netdata
-  #   container_name: netdata
-  #   hostname: homelab
-  #   restart: unless-stopped
+  netdata:
+    build:
+      context: ./netdata
+    image: homelab-netdata
+    container_name: netdata
+    hostname: homelab
+    restart: unless-stopped
 
-  #   pid: host
+    pid: host
 
-  #   cap_add:
-  #     - SYS_PTRACE
-  #     - SYS_ADMIN
+    cap_add:
+      - SYS_PTRACE
+      - SYS_ADMIN
 
-  #   security_opt:
-  #     - apparmor:unconfined
+    security_opt:
+      - apparmor:unconfined
 
-  #   volumes:
-  #     - ./data/netdata/config:/etc/netdata
-  #     - ./data/netdata/lib:/var/lib/netdata
-  #     - ./data/netdata/cache:/var/cache/netdata
+    volumes:
+      - ./data/netdata/config:/etc/netdata
+      - ./data/netdata/lib:/var/lib/netdata
+      - ./data/netdata/cache:/var/cache/netdata
 
-  #     - /:/host/root:ro,rslave
-  #     - /etc/passwd:/host/etc/passwd:ro
-  #     - /etc/group:/host/etc/group:ro
-  #     - /etc/localtime:/etc/localtime:ro
-  #     - /proc:/host/proc:ro
-  #     - /sys:/host/sys:ro
-  #     - /etc/os-release:/host/etc/os-release:ro
-  #     - /var/log:/host/var/log:ro
-  #     - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /:/host/root:ro,rslave
+      - /etc/passwd:/host/etc/passwd:ro
+      - /etc/group:/host/etc/group:ro
+      - /etc/localtime:/etc/localtime:ro
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /etc/os-release:/host/etc/os-release:ro
+      - /var/log:/host/var/log:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
 
-  #   networks:
-  #     - homelab_network
+    networks:
+      - homelab_network
 
 
-  # wol-service:
-  #   build:
-  #     context: ./wol-service
-  #   container_name: wol-service
-  #   restart: unless-stopped
-  #   network_mode: host
-  #   env_file:
-  #     - .env
+  wol-service:
+    build:
+      context: ./wol-service
+    container_name: wol-service
+    restart: unless-stopped
+    network_mode: host
+    env_file:
+      - .env
 
   # backend:
   #   build:
