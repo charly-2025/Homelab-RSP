@@ -15,8 +15,4 @@ location /netdata/ {
     proxy_set_header X-Forwarded-Host $host;
     proxy_set_header X-Forwarded-Uri $request_uri;
 
-    proxy_set_header Remote-User $user;
-    proxy_set_header Remote-Groups $groups;
-    proxy_set_header Remote-Name $name;
-    proxy_set_header Remote-Email $email;
 }
