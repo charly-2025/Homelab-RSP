@@ -1,4 +1,14 @@
 services:
+  homepage:
+    image: ghcr.io/gethomepage/homepage:latest
+    container_name: homepage
+    restart: unless-stopped
+    volumes:
+      - ./data/homepage:/app/config
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - homelab_network
+
   portainer:
     image: portainer/portainer-ce:latest
     container_name: portainer
