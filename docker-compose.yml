@@ -115,36 +115,34 @@ services:
   #     - homelab_network  
 
 
-  nginx:
-    build:
-      context: ./nginx
-    container_name: homelab-nginx
-    restart: unless-stopped
-    ports:
-      - "80:80"
-      - "443:443"
-    depends_on:
-      - frontend
-      - backend
-    volumes:
-      - ./nginx/certs:/etc/nginx/certs:ro
-      - ./nginx/conf.d:/etc/nginx/conf.d:ro
-    networks:
-      - homelab_network
+  # nginx:
+  #   build:
+  #     context: ./nginx
+  #   container_name: homelab-nginx
+  #   restart: unless-stopped
+  #   ports:
+  #     - "80:80"
+  #     - "443:443"
+  
+  #   volumes:
+  #     - ./nginx/certs:/etc/nginx/certs:ro
+  #     - ./nginx/conf.d:/etc/nginx/conf.d:ro
+  #   networks:
+  #     - homelab_network
 
-  authelia:
-    image: authelia/authelia:latest
-    container_name: authelia
-    restart: unless-stopped
+  # authelia:
+  #   image: authelia/authelia:latest
+  #   container_name: authelia
+  #   restart: unless-stopped
 
-    volumes:
-      - ./data/authelia/config:/config
+  #   volumes:
+  #     - ./data/authelia/config:/config
 
-    environment:
-      TZ: Europe/Paris
+  #   environment:
+  #     TZ: Europe/Paris
 
-    networks:
-      - homelab_network
+  #   networks:
+  #     - homelab_network
 
 
 networks:
