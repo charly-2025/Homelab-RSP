@@ -1,39 +1,68 @@
-# Variables sensibles
+# ============================================
+# CONFIGURATIONS RÉELLES (sauvegardées par Restic)
+# ============================================
+
+# Variables d'environnement
 .env
 **/.env
 
-# Données des applications
+# Données persistantes Docker
 data/
 
-# Volumes Docker
+# Volumes Docker éventuels
 **/volumes/
 
-# Bases de données
-*.db
-*.sqlite
-*.sqlite3
-
-# Secrets
+# Certificats et clés
 *.key
 *.pem
 *.crt
+*.p12
+*.pfx
 
-# Logs
-*.log
+# ============================================
+# FICHIERS GÉNÉRÉS
+# ============================================
 
 # Python
 __pycache__/
-*.pyc
+*.py[cod]
 .venv/
+venv/
 
-# Node
+# Node.js
 node_modules/
+**/node_modules/
 
-# Builds frontend
-frontend/node_modules/
-frontend/dist/
+# Builds
+dist/
+**/dist/
 
-# Backups
+# Logs
+*.log
+logs/
+
+# Archives
 *.tar
+*.tar.gz
 *.zip
 *.bak
+
+# Cache
+.cache/
+
+# ============================================
+# ÉDITEURS
+# ============================================
+
+.vscode/
+!.vscode/settings.json
+!.vscode/extensions.json
+
+.idea/
+
+# ============================================
+# SYSTÈME
+# ============================================
+
+.DS_Store
+Thumbs.db

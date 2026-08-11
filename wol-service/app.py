@@ -2,14 +2,18 @@ import os
 import subprocess
 
 from dotenv import load_dotenv
-from flask import jsonify
+from flask import Flask, jsonify
+from wakeonlan import send_magic_packet
+
+app = Flask(__name__)
 
 load_dotenv()
 
 PC_MAC = os.getenv("PC_MAC")
 WOL_METHOD = os.getenv("WOL_METHOD")
 
-@app.route("/api/wake", methods=["POST"])
+
+@app.route("/wake", methods=["POST"])
 def wake():
     try:
         if not WOL_METHOD:
@@ -36,7 +40,7 @@ def wake():
         return jsonify({
             "success": True,
             "method": WOL_METHOD
-        })
+        }), 200
 
     except Exception as e:
         return jsonify({
@@ -46,7 +50,4 @@ def wake():
 
 
 if __name__ == "__main__":
-    app.run(
-        host="0.0.0.0",
-        port=4000
-    )
+    app.run(host="0.0.0.0", port=4000)
