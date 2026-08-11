@@ -1,16 +1,4 @@
 services:
-  homepage:
-    image: ghcr.io/gethomepage/homepage:latest
-    container_name: homepage
-    restart: unless-stopped
-    environment:
-      HOMEPAGE_ALLOWED_HOSTS: your-machine.your-tailnet.ts.net
-    volumes:
-      - ./data/homepage:/app/config
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-    networks:
-      - homelab_network
-
   portainer:
     image: portainer/portainer-ce:latest
     container_name: portainer
