@@ -166,6 +166,9 @@ services:
       context: ./site/backend
     container_name: remote-wakeup-backend
     restart: unless-stopped
+    devices:
+      - "/dev/gpiomem:/dev/gpiomem"
+      - "/dev/gpiochip0:/dev/gpiochip0"
     env_file:
       - .env
     extra_hosts:
