@@ -52,3 +52,59 @@
     .home-content { padding: 20px; }
     .home-content button { max-width: 100%; }
 }
+
+.home-card {
+  margin-top: 1.5rem;
+  padding: 1rem 1.5rem;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  width: 100%;
+  max-width: 400px;
+}
+
+.stat-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 0.5rem 0;
+}
+
+.stat-label {
+  width: 70px;
+  font-size: 0.9rem;
+  opacity: 0.8;
+}
+
+.stat-bar {
+  flex: 1;
+  height: 10px;
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+}
+
+.stat-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #4ade80, #22c55e);
+  transition: width 0.3s ease;
+}
+
+.stat-value {
+  width: 40px;
+  text-align: right;
+  font-size: 0.85rem;
+}
+
+.fan-slider {
+  width: 100%;
+  accent-color: #22c55e;
+}
+
+.fan-syncing {
+  display: inline-block;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
