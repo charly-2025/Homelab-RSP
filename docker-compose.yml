@@ -1,40 +1,40 @@
 services:
-  immich-server:
-    image: ghcr.io/immich-app/immich-server:release
-    container_name: immich-server
-    restart: unless-stopped
-    volumes:
-      - ./data/immich/upload:/usr/src/app/upload
-      - /etc/localtime:/etc/localtime:ro
-    env_file:
-      - ./immich/.env
-    environment:
-      IMMICH_MACHINE_LEARNING_ENABLED: "false"
-    depends_on:
-      - immich-redis
-      - immich-db
-    networks:
-      - homelab_network
+  # immich-server:
+  #   image: ghcr.io/immich-app/immich-server:release
+  #   container_name: immich-server
+  #   restart: unless-stopped
+  #   volumes:
+  #     - ./data/immich/upload:/usr/src/app/upload
+  #     - /etc/localtime:/etc/localtime:ro
+  #   env_file:
+  #     - ./immich/.env
+  #   environment:
+  #     IMMICH_MACHINE_LEARNING_ENABLED: "false"
+  #   depends_on:
+  #     - immich-redis
+  #     - immich-db
+  #   networks:
+  #     - homelab_network
 
-  immich-redis:
-    image: redis:6.2-alpine
-    container_name: immich-redis
-    restart: unless-stopped
-    networks:
-      - homelab_network
+  # immich-redis:
+  #   image: redis:6.2-alpine
+  #   container_name: immich-redis
+  #   restart: unless-stopped
+  #   networks:
+  #     - homelab_network
 
-  immich-db:
-    image: ghcr.io/immich-app/postgres:14-vectorchord0.3.0-pgvectors0.2.0
-    container_name: immich-db
-    restart: unless-stopped
-    environment:
-      POSTGRES_PASSWORD: ${IMMICH_DB_PASSWORD}
-      POSTGRES_USER: postgres
-      POSTGRES_DB: immich
-    volumes:
-      - ./data/immich/db:/var/lib/postgresql/data
-    networks:
-      - homelab_network
+  # immich-db:
+  #   image: ghcr.io/immich-app/postgres:14-vectorchord0.3.0-pgvectors0.2.0
+  #   container_name: immich-db
+  #   restart: unless-stopped
+  #   environment:
+  #     POSTGRES_PASSWORD: ${IMMICH_DB_PASSWORD}
+  #     POSTGRES_USER: postgres
+  #     POSTGRES_DB: immich
+  #   volumes:
+  #     - ./data/immich/db:/var/lib/postgresql/data
+  #   networks:
+  #     - homelab_network
 
   nextcloud-db:
     image: mariadb:11
@@ -94,66 +94,66 @@ services:
     networks:
       - homelab_network
 
-  pihole:
-    image: pihole/pihole:latest
-    container_name: pihole
-    hostname: pihole
-    restart: unless-stopped
+  # pihole:
+  #   image: pihole/pihole:latest
+  #   container_name: pihole
+  #   hostname: pihole
+  #   restart: unless-stopped
 
-    environment:
-      TZ: Europe/Paris
-      FTLCONF_webserver_api_password: ${PIHOLE_PASSWORD}
-      FTLCONF_webserver_paths_prefix: /pihole
-      DNSMASQ_LISTENING: all
+  #   environment:
+  #     TZ: Europe/Paris
+  #     FTLCONF_webserver_api_password: ${PIHOLE_PASSWORD}
+  #     FTLCONF_webserver_paths_prefix: /pihole
+  #     DNSMASQ_LISTENING: all
 
-    volumes:
-      - ./data/pihole/etc-pihole:/etc/pihole
-      - ./data/pihole/etc-dnsmasq.d:/etc/dnsmasq.d
+  #   volumes:
+  #     - ./data/pihole/etc-pihole:/etc/pihole
+  #     - ./data/pihole/etc-dnsmasq.d:/etc/dnsmasq.d
 
-    ports:
-      - "53:53/tcp"
-      - "53:53/udp"
+  #   ports:
+  #     - "53:53/tcp"
+  #     - "53:53/udp"
 
-    cap_add:
-      - NET_ADMIN
+  #   cap_add:
+  #     - NET_ADMIN
 
-    networks:
-      - homelab_network
+  #   networks:
+  #     - homelab_network
   
-  netdata:
-    build:
-      context: ./netdata
-    image: homelab-netdata
-    container_name: netdata
-    hostname: homelab
-    restart: unless-stopped
+  # netdata:
+  #   build:
+  #     context: ./netdata
+  #   image: homelab-netdata
+  #   container_name: netdata
+  #   hostname: homelab
+  #   restart: unless-stopped
 
-    pid: host
+  #   pid: host
 
-    cap_add:
-      - SYS_PTRACE
-      - SYS_ADMIN
+  #   cap_add:
+  #     - SYS_PTRACE
+  #     - SYS_ADMIN
 
-    security_opt:
-      - apparmor:unconfined
+  #   security_opt:
+  #     - apparmor:unconfined
 
-    volumes:
-      - ./data/netdata/config:/etc/netdata
-      - ./data/netdata/lib:/var/lib/netdata
-      - ./data/netdata/cache:/var/cache/netdata
+  #   volumes:
+  #     - ./data/netdata/config:/etc/netdata
+  #     - ./data/netdata/lib:/var/lib/netdata
+  #     - ./data/netdata/cache:/var/cache/netdata
 
-      - /:/host/root:ro,rslave
-      - /etc/passwd:/host/etc/passwd:ro
-      - /etc/group:/host/etc/group:ro
-      - /etc/localtime:/etc/localtime:ro
-      - /proc:/host/proc:ro
-      - /sys:/host/sys:ro
-      - /etc/os-release:/host/etc/os-release:ro
-      - /var/log:/host/var/log:ro
-      - /var/run/docker.sock:/var/run/docker.sock:ro
+  #     - /:/host/root:ro,rslave
+  #     - /etc/passwd:/host/etc/passwd:ro
+  #     - /etc/group:/host/etc/group:ro
+  #     - /etc/localtime:/etc/localtime:ro
+  #     - /proc:/host/proc:ro
+  #     - /sys:/host/sys:ro
+  #     - /etc/os-release:/host/etc/os-release:ro
+  #     - /var/log:/host/var/log:ro
+  #     - /var/run/docker.sock:/var/run/docker.sock:ro
 
-    networks:
-      - homelab_network
+  #   networks:
+  #     - homelab_network
 
 
   wol-service:
