@@ -1,6 +1,7 @@
 location / {
 
-    proxy_pass http://frontend:80;
+    set $upstream_frontend frontend:80;
+    proxy_pass http://$upstream_frontend;
 
     proxy_set_header Host $host;
     proxy_set_header X-Real-IP $remote_addr;
@@ -8,13 +9,13 @@ location / {
     proxy_set_header X-Forwarded-Proto $scheme;
     proxy_set_header X-Forwarded-Host $host;
     proxy_set_header X-Forwarded-Uri $request_uri;
-
 
 }
 
 location /api/ {
 
-    proxy_pass http://backend:3000;
+    set $upstream_backend backend:3000;
+    proxy_pass http://$upstream_backend;
 
     proxy_set_header Host $host;
     proxy_set_header X-Real-IP $remote_addr;
@@ -22,6 +23,5 @@ location /api/ {
     proxy_set_header X-Forwarded-Proto $scheme;
     proxy_set_header X-Forwarded-Host $host;
     proxy_set_header X-Forwarded-Uri $request_uri;
-
 
 }

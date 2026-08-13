@@ -9,7 +9,8 @@ location = /pihole/ {
 location /pihole/ {
     rewrite ^/pihole(/.*)$ $1 break;
 
-    proxy_pass http://pihole:80;
+    set $upstream_pihole pihole:80;
+    proxy_pass http://$upstream_pihole;
 
     proxy_set_header Host $host;
     proxy_set_header X-Real-IP $remote_addr;
