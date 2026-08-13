@@ -24,7 +24,7 @@ services:
       - homelab_network
 
   immich-db:
-    image: tensorchord/pgvecto-rs:pg14-v0.2.0
+    image: ghcr.io/immich-app/postgres:14-vectorchord0.3.0-pgvectors0.2.0
     container_name: immich-db
     restart: unless-stopped
     environment:
@@ -65,6 +65,9 @@ services:
       MYSQL_USER: nextcloud
       MYSQL_PASSWORD: ${NEXTCLOUD_DB_PASSWORD}
       NEXTCLOUD_TRUSTED_DOMAINS: your-machine.your-tailnet.ts.net
+      OVERWRITEWEBROOT: /nextcloud
+      OVERWRITEPROTOCOL: https
+      OVERWRITEHOST: your-machine.your-tailnet.ts.net
     networks:
       - homelab_network
 
@@ -87,6 +90,7 @@ services:
     environment:
       WEBSOCKET_ENABLED: "true"
       SIGNUPS_ALLOWED: "true"
+      DOMAIN: "https://your-machine.your-tailnet.ts.net/vaultwarden"
     networks:
       - homelab_network
 
@@ -166,12 +170,13 @@ services:
       context: ./site/backend
     container_name: remote-wakeup-backend
     restart: unless-stopped
+    environment:
+      RPI_LGPIO_REVISION: "b03115"
     devices:
       - "/dev/gpiomem:/dev/gpiomem"
       - "/dev/gpiochip0:/dev/gpiochip0"
     volumes:
       - ./data/site/backend:/data
-      - /proc/device-tree:/proc/device-tree:ro
     env_file:
       - .env
     extra_hosts:
@@ -197,6 +202,7 @@ services:
      ports:
        - "80:80"
        - "443:443"
+       - "8443:8443"
   
      volumes:
        - ./nginx/certs:/etc/nginx/certs:ro

@@ -1,13 +1,9 @@
 location /vaultwarden/ {
-
-    rewrite ^/vaultwarden/(.*)$ /$1 break;
-
     set $upstream_vaultwarden vaultwarden:80;
     proxy_pass http://$upstream_vaultwarden;
-
+    proxy_http_version 1.1;
     proxy_set_header Host $host;
     proxy_set_header X-Real-IP $remote_addr;
-
     proxy_set_header Upgrade $http_upgrade;
     proxy_set_header Connection "upgrade";
 }

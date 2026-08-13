@@ -4,9 +4,9 @@ location = /netdata {
 
 location /netdata/ {
 
+    set $upstream_netdata netdata:19999;
     rewrite ^/netdata/(.*)$ /$1 break;
 
-    set $upstream_netdata netdata:19999;
     proxy_pass http://$upstream_netdata;
 
     proxy_http_version 1.1;
