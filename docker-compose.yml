@@ -169,12 +169,13 @@ services:
     devices:
       - "/dev/gpiomem:/dev/gpiomem"
       - "/dev/gpiochip0:/dev/gpiochip0"
+    volumes:
+      - ./data/site/backend:/data
+      - /proc/device-tree:/proc/device-tree:ro
     env_file:
       - .env
     extra_hosts:
       - "host.docker.internal:host-gateway"
-    volumes:
-      - ./data/site/backend:/data
     networks:
       - homelab_network
 
