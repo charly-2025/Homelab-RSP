@@ -10,18 +10,18 @@ http {
         listen 80 default_server;
         server_name _;
 
-        return 301 https://your-machine.your-tailnet.ts.net$request_uri;
+        return 301 https://${HOMELAB_HOST}$request_uri;
     }
 
 
     server {
 
         listen 443 ssl;
-        server_name your-machine.your-tailnet.ts.net;
+        server_name ${HOMELAB_HOST};
 
 
-        ssl_certificate /etc/nginx/certs/your-machine.your-tailnet.ts.net.crt;
-        ssl_certificate_key /etc/nginx/certs/your-machine.your-tailnet.ts.net.key;
+        ssl_certificate /etc/nginx/certs/${HOMELAB_HOST}.crt;
+        ssl_certificate_key /etc/nginx/certs/${HOMELAB_HOST}.key;
 
 
         include /etc/nginx/conf.d/*.location;
@@ -31,10 +31,10 @@ http {
 	server {
 
             listen 8443 ssl;
-            server_name your-machine.your-tailnet.ts.net;
+            server_name ${HOMELAB_HOST};
 
-            ssl_certificate /etc/nginx/certs/your-machine.your-tailnet.ts.net.crt;
-            ssl_certificate_key /etc/nginx/certs/your-machine.your-tailnet.ts.net.key;
+            ssl_certificate /etc/nginx/certs/${HOMELAB_HOST}.crt;
+            ssl_certificate_key /etc/nginx/certs/${HOMELAB_HOST}.key;
 
             client_max_body_size 50000M;
             proxy_read_timeout 600s;

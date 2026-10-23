@@ -47,12 +47,20 @@ cp .env.example .env      # MAC address of the PC, API token, passwords...
 docker compose up -d --build
 ```
 
-Replace `your-machine.your-tailnet.ts.net` in the nginx configuration with your
-own Tailscale hostname and place its certificates in `nginx/certs/`
+Set `HOMELAB_HOST` in `.env` to your Tailscale hostname: nginx, Nextcloud and
+Vaultwarden all read it from there. Then place the certificates in
+`nginx/certs/` as `<HOMELAB_HOST>.crt` and `<HOMELAB_HOST>.key`
 (`tailscale cert` generates them).
 
-## Security notes
+## Security
 
-- No secret is committed: everything sensitive lives in `.env` (ignored by git).
-- Services are private by design (Tailscale only), behind HTTPS.
-- Requests to the Wake-on-LAN API are authenticated with a token.
+- **No secret in git**: hostnames, MAC address, tokens and passwords live in
+  `.env` (ignored), certificates and service data are ignored too.
+- **Private by design**: services are only reachable from my Tailscale network,
+  behind HTTPS, and the Wake-on-LAN API requires a token.
+- **Secret scanning**: [gitleaks](https://github.com/gitleaks/gitleaks) runs on
+  every push and pull request (`.github/workflows/secret-scan.yml`), with extra
+  rules for Tailscale hostnames and addresses and MAC addresses
+  (`.gitleaks.toml`).
+- **Local hook**: enable the same check before each commit with
+  `pip install pre-commit && pre-commit install`.

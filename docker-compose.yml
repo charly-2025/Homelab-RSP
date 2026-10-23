@@ -64,10 +64,10 @@ services:
       MYSQL_DATABASE: nextcloud
       MYSQL_USER: nextcloud
       MYSQL_PASSWORD: ${NEXTCLOUD_DB_PASSWORD}
-      NEXTCLOUD_TRUSTED_DOMAINS: your-machine.your-tailnet.ts.net
+      NEXTCLOUD_TRUSTED_DOMAINS: ${HOMELAB_HOST}
       OVERWRITEWEBROOT: /nextcloud
       OVERWRITEPROTOCOL: https
-      OVERWRITEHOST: your-machine.your-tailnet.ts.net
+      OVERWRITEHOST: ${HOMELAB_HOST}
     networks:
       - homelab_network
 
@@ -90,7 +90,7 @@ services:
     environment:
       WEBSOCKET_ENABLED: "true"
       SIGNUPS_ALLOWED: "true"
-      DOMAIN: "https://your-machine.your-tailnet.ts.net/vaultwarden"
+      DOMAIN: "https://${HOMELAB_HOST}/vaultwarden"
     networks:
       - homelab_network
 
@@ -204,6 +204,8 @@ services:
        - "443:443"
        - "8443:8443"
   
+     environment:
+       HOMELAB_HOST: ${HOMELAB_HOST}
      volumes:
        - ./nginx/certs:/etc/nginx/certs:ro
        - ./nginx/conf.d:/etc/nginx/conf.d:ro
